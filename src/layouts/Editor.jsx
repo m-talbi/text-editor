@@ -1,4 +1,4 @@
-import React from 'react'
+/* eslint-disable react/prop-types */
 import Seperator from '../components/Seperator';
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {

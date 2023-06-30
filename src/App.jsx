@@ -1,7 +1,9 @@
 import Header from './layouts/Header'
 import { BookOpen } from 'lucide-react'
 import Toolbar from './layouts/Toolbar'
+import Container from './components/Container'
 import { useState } from 'react'
+import Editor from './layouts/Editor'
 
 const breadCrumbs = [
   <div key={0} className='flex gap-1 items-center'>
@@ -12,20 +14,38 @@ const breadCrumbs = [
 ]
 
 function App() {
-  const [title] = useState('My new Frontend Project')
+  const [title, setTitle] = useState('')
+  const [text, setText] = useState('')
+
+  const updateTitle = (ev) => {
+    if (ev.key === 'Enter') {
+      ev.target.blur();
+    }
+
+    setTitle(ev.target.textContent)
+  }
+
+  const updateText = (ev) => {
+    //setText()
+  }
 
   return (
     <main>
       <Header breadCrumbs={[...breadCrumbs, title]} />
-      <div className='px-[12vw] pt-4'>
+      <Container>
         <Toolbar
           username="L Doe"
           userIcon={<img height={35} width={35} src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png' />}
           readTime={3}
           viewCount={123}
         />
-        {/* TODO: EDITOR */}
-      </div>
+        <Editor
+          title={title}
+          text={text}
+          onTitleUpdate={updateTitle}
+          onTextUpdate={updateText}
+        />
+      </Container>
     </main>
   )
 }

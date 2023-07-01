@@ -1,4 +1,5 @@
 /* eslint-disable react/prop-types */
+import ContentEditable from '../components/ContentEditable';
 import Seperator from '../components/Seperator';
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
@@ -6,17 +7,20 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   return (
     <div className='flex flex-col mt-6'>
       <div>
-        <h3
-          className='text-slate-800 text-4xl font-bold focus-within:outline-none'
-          placeholder='Write your title here...'
-          contentEditable 
-          onKeyDown={onTitleUpdate}
-          content={title}
+        <input
+          className='w-full text-slate-800 text-4xl font-bold focus-within:outline-none'
+          placeholder='Write your title here...' 
+          onChange={onTitleUpdate}
+          value={title}
         />
       </div>
       <Seperator vertical={false} className="bg-slate-200 my-4" />
       <div>
-        <p onInput={onTextUpdate}>{text}</p>
+        <ContentEditable
+          value={text}
+          onInput={onTextUpdate}
+          placeholder='Type / for blocks, or @ to link docs or people'
+        />
       </div>
     </div>
   )

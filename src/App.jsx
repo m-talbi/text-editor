@@ -20,13 +20,14 @@ function App() {
   const updateTitle = (ev) => {
     if (ev.key === 'Enter') {
       ev.target.blur();
+      return;
     }
 
-    setTitle(ev.target.textContent)
+    setTitle(ev.target.value)
   }
 
   const updateText = (ev) => {
-    //setText()
+    setText(ev.target.outerText)
   }
 
   return (

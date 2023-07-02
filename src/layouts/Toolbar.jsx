@@ -4,7 +4,7 @@ import { Clock, ArrowDownLeft, CheckCircle, Cloud, GripVertical } from 'lucide-r
 /* eslint-disable react/prop-types */
 const Toolbar = ({ username, userIcon, readTime, viewCount }) => {
   return (
-    <div className="py-[0.4rem] px-2 border border-slate-200 rounded-md shadow-sm flex items-center justify-between">
+    <div className="py-[0.3rem] px-[0.4rem] border border-slate-200 rounded-md shadow-sm flex items-center justify-between">
       <section className="flex items-center gap-2">
         <div className="bg-green-200 rounded-[4px] px-[0.35rem] flex items-center justify-center">
           <span className="text-green-800 text-lg font-bold p-[0.15rem] h-fit">{username[0].toUpperCase()}</span>

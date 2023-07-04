@@ -1,40 +1,29 @@
 /* eslint-disable react/prop-types */
 import { Pencil } from "lucide-react"
 import { useEffect, useRef } from "react";
-import getCaretIndex from "../hooks/useCaretIndex"
+import getCaretRect from "../utils/getCaretRect";
 
 const Popover = ({ keywords, textformats, editorRef }) => {
   const popoverRef = useRef(null);
-  const pos = getCaretIndex(editorRef.current);
-  const bottom = useRef(0);
+  let { x, y } = getCaretRect();
   const left = useRef(0);
-
-  function getRect() {
-    const selection = window.getSelection();
-    
-    if (selection.rangeCount === 0) return { width: 0, height: 0 };
-    
-    const range = selection.getRangeAt(0);
-    return range.getBoundingClientRect();
-  }
-
-  let rect = getRect();
+  const top = useRef(0);
 
   useEffect(() => {
     if (!popoverRef.current) return;
 
     function movePopoverToCaret() {
-      popoverRef.current.style.top = bottom.current + "px";
-      popoverRef.current.style.left = left.current + "px";
+      popoverRef.current.style.top = top.current  + "px";
+      if (editorRef.current.offsetWidth - left.current > popoverRef.current.offsetWidth) {
+        popoverRef.current.style.left = left.current + "px";
+      }
     }
 
-    bottom.current = pos.height;
-    left.current = rect.x - (popoverRef.current.offsetWidth / 2) - 10;
+    left.current = x ? x - (popoverRef.current.offsetWidth / 2) - 10 : 0;
+    top.current = y ? y - (popoverRef.current.offsetHeight / 2) + 10 : 30;
 
     movePopoverToCaret();
-  }, [pos.height, rect.x]);
-
-  console.log(rect);
+  }, [editorRef, x, y]);
 
 
   return (

@@ -1,18 +1,13 @@
 import { twMerge } from "tailwind-merge"
+import { forwardRef } from "react";
 
 /* eslint-disable react/prop-types */
-const ContentEditable = ({ onInput, placeholder, className }) => {
+const ContentEditable = forwardRef(({ onInput, placeholder, className }, ref) => {
 
-  function setPlaceholder(e) {
+  const handleInput = (e) => {
     const value = e.target.innerHTML;
-    value === placeholder && (e.target.innerHTML = '');
-  }
-
-  const onBlur = (e) => {
-    console.log(e);
-    onInput(e)
-    const value = e.target.innerHTML;
-    value === '<br>' && (e.target.innerHTML = "");
+    (value === '<br>' || value === '<div><br></div>') && (e.target.innerHTML = "");
+    onInput(e);
   };
 
 
@@ -24,15 +19,17 @@ const ContentEditable = ({ onInput, placeholder, className }) => {
 
   return (
     <div
+      ref={ref}
       data-placeholder={placeholder}
-      className={twMerge('w-full text-slate-700 text-base font-medium focus-within:outline-none whitespace-pre-wrap break-words before:text-slate-400 empty:before:content-[attr(data-placeholder)]', className)}
+      className={twMerge('w-full text-slate-700 text-base font-medium focus-within:outline-none whitespace-pre-wrap break-words before:text-slate-400 before:cursor-text empty:before:content-[attr(data-placeholder)]', className)}
       contentEditable
       suppressContentEditableWarning
       onPaste={pasteAsPlainText}
-      onInput={onBlur}
-      onFocus={setPlaceholder}
+      onInput={handleInput}
     />
   )
-}
+})
+
+ContentEditable.displayName = "ContentEditable";
 
 export default ContentEditable;

@@ -32,7 +32,7 @@ function App() {
 
   return (
     <main>
-      <Header breadCrumbs={[...breadCrumbs, title]} />
+      <Header breadCrumbs={[...breadCrumbs, title.length >= 27 ? title.slice(0, 27) + "..." : title]} />
       <Container>
         <Toolbar
           username="L Doe"

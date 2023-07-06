@@ -1,11 +1,14 @@
 /* eslint-disable react/prop-types */
 import { Pencil } from "lucide-react"
 import { useEffect, useRef } from "react";
-import getCaretRect from "../utils/getCaretRect";
+import { getCaretRect } from "../utils/getCaretRect";
+import { twMerge } from "tailwind-merge";
 
-const Popover = ({ keywords, textformats, editorRef }) => {
+const Popover = ({ keywords, textformats, editorRef, selectedFormat }) => {
   const popoverRef = useRef(null);
-  let { x, y } = getCaretRect();
+  let { x, y } = getCaretRect(editorRef.current);
+  const keyword = keywords.replace(" ", "")
+  const searchPattern = new RegExp(keyword.split("").join('|'), 'gi');
   const left = useRef(0);
   const top = useRef(0);
 
@@ -37,19 +40,23 @@ const Popover = ({ keywords, textformats, editorRef }) => {
         </div>
         <div className="text-base ">
           <span className="text-gray-600">Filtering Keywords&nbsp;</span>
-          <span className="bg-sky-700 text-white px-[0.3rem] py-1 rounded-[4px]">{keywords.length}</span>
+          <span className="bg-sky-700 text-white px-[0.3rem] py-1 rounded-[4px]">{keyword.length}</span>
         </div>
       </div>
       <ul className="flex flex-col overflow-y-auto overflow-x-hidden w-full h-3/4">
-        {textformats.map((item, index) => (
-          <li key={index} className="flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 cursor-pointer">
-            <Pencil color="#000000" />
-            <div>
-              <p className="text-gray-700 font-bold text-lg">{item.format}</p>
-              <p className="text-gray-400 text-sm">Shortcut: type {item.shortcut}</p>
-            </div>
-          </li>
-        ))}
+        {
+          textformats
+          .filter((textFormat) => keyword.length === 0 || textFormat.format.match(searchPattern).length === keyword.length)
+          .map((item, index) => (
+            <li key={index} className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 cursor-pointer", `${selectedFormat === index && "bg-gray-200"}`)}>
+              <Pencil color="#000000" />
+              <div>
+                <p className="text-gray-700 font-bold text-lg">{item.format}</p>
+                <p className="text-gray-400 text-sm">Shortcut: type {item.shortcut}</p>
+              </div>
+            </li>
+          ))
+        }
       </ul>
     </div>
   )

@@ -1,20 +1,44 @@
 /* eslint-disable react/prop-types */
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ContentEditable from '../components/ContentEditable';
 import Popover from '../components/Popover';
 import Seperator from '../components/Seperator';
+import { getTextType } from '../utils/utils';
+import textformats from '../constants/formats';
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
-  const textformats = [
-    {format: "Heading 1", shortcut: "# + space"},
-    {format: "Heading 2", shortcut: "## + space"},
-    {format: "Heading 3", shortcut: "### + space"},
-    {format: "Heading 4", shortcut: "#### + space"},
-    {format: "Heading 5", shortcut: "##### + space"},
-    {format: "Heading 6", shortcut: "###### + space"},
-  ]
-
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState(0);
+  const command = useRef({ value: "", indexOfSlash: -1 });
   const contentEditableRef = useRef(null);
+
+  useEffect(() => {
+    const slashIndex = command.current.indexOfSlash;
+
+    if (slashIndex < 0 || text[slashIndex] !== '/') {
+      command.current = { value: "", indexOfSlash: -1 };
+      setIsPopoverOpen(false);
+    }
+    console.log(command.current);
+  }, [command.current.value, text]);
+  
+  const inputText = (ev) => {
+    const userInput = getTextType(ev.nativeEvent.data);
+
+    onTextUpdate(ev.target.outerText);
+
+    if (userInput.type == "command") {
+      command.current = { value: userInput.value, indexOfSlash: text.length };
+      setIsPopoverOpen(true);
+      return;
+    }
+
+    if (command.current.value != "") {
+      const value = command.current.value
+      const newValue =  userInput.value ? value + userInput.value : value.slice(0, value.length - 1);
+      command.current = { ...command.current, value: newValue };
+    }
+  }
 
   return (
     <div className='flex flex-col mt-6'>
@@ -31,14 +55,17 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
         <ContentEditable
           ref={contentEditableRef}
           value={text}
-          onInput={onTextUpdate}
+          onInput={inputText}
           placeholder='Type / for blocks, or @ to link docs or people'
         />
-        <Popover
-          keywords={['link', 'docs', 'people']}
-          textformats={textformats}
-          editorRef={contentEditableRef}
-        />
+        {isPopoverOpen &&
+          <Popover
+            keywords={command.current.value.slice(1)}
+            textformats={textformats}
+            editorRef={contentEditableRef}
+            selectedFormat={selectedFormat}
+          />
+        }
       </div>
     </div>
   )

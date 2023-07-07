@@ -1,11 +1,11 @@
-const saveCaretPosition = () => {
+export const saveCaretPosition = () => {
   const selection = window.getSelection();
   if (selection.rangeCount > 0) {
     return selection.getRangeAt(0).cloneRange();
   }
 };
 
-const restoreCaretPosition = (element, savedSelection) => {
+export const restoreCaretPosition = (element, savedSelection) => {
   if (savedSelection && element) {
     const selection = window.getSelection();
     selection.removeAllRanges();
@@ -13,6 +13,10 @@ const restoreCaretPosition = (element, savedSelection) => {
     element.focus();
   }
 };
+
+export const clearSelection = () => {
+  window.getSelection().removeAllRanges();
+}
 
 export const getCaretRect = (element) => {
   const isSupported = typeof window.getSelection !== "undefined";
@@ -28,7 +32,7 @@ export const getCaretRect = (element) => {
       const res = range.getBoundingClientRect();
       temp.parentNode.removeChild(temp);
       restoreCaretPosition(element, savedSelection);
-      return res;
+      return { x: res.x, y: res.y };
     }
   }
 

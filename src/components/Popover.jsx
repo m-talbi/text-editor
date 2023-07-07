@@ -1,23 +1,38 @@
 /* eslint-disable react/prop-types */
 import { Pencil } from "lucide-react"
-import { useEffect, useRef } from "react";
-import { getCaretRect } from "../utils/getCaretRect";
+import { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
+import { useKeyPress } from '../hooks/useKeypress';
+import { clearSelection, restoreCaretPosition, saveCaretPosition, getCaretRect } from '../utils/getCaretRect';
 
-const Popover = ({ keywords, textformats, editorRef, selectedFormat }) => {
+const Popover = ({ keywords, textformats, editorEl }) => {
+  const [selectedFormat, setSelectedFormat] = useState(0);
   const popoverRef = useRef(null);
-  let { x, y } = getCaretRect(editorRef.current);
-  const keyword = keywords.replace(" ", "")
-  const searchPattern = new RegExp(keyword.split("").join('|'), 'gi');
+  const searchPattern = new RegExp(keywords.split("").join('|'), 'gi');
+  let { x, y } = getCaretRect(editorEl);
+  // const savedSelection = useRef(null);
   const left = useRef(0);
   const top = useRef(0);
 
+  useKeyPress("ArrowUp", () => {
+    editorEl.blur();
+    clearSelection();
+    setSelectedFormat((prev) => prev - 1 >= 0 ? prev - 1 : 0);
+  });
+
+  useKeyPress("ArrowDown", () => {
+    editorEl.blur();
+    clearSelection();
+    const formatsLength = textformats.length - 1;
+    setSelectedFormat((prev) => prev + 1 <= formatsLength ? prev + 1 : formatsLength);
+  });
+
   useEffect(() => {
-    if (!popoverRef.current) return;
+    if (!popoverRef.current || editorEl !== document.activeElement) return;
 
     function movePopoverToCaret() {
-      popoverRef.current.style.top = top.current  + "px";
-      if (editorRef.current.offsetWidth - left.current > popoverRef.current.offsetWidth) {
+      popoverRef.current.style.top = top.current + "px";
+      if (editorEl.offsetWidth - left.current > popoverRef.current.offsetWidth) {
         popoverRef.current.style.left = left.current + "px";
       }
     }
@@ -26,7 +41,7 @@ const Popover = ({ keywords, textformats, editorRef, selectedFormat }) => {
     top.current = y ? y - (popoverRef.current.offsetHeight / 2) + 10 : 30;
 
     movePopoverToCaret();
-  }, [editorRef, x, y]);
+  }, [editorEl, editorEl.offsetWidth, x, y]);
 
 
   return (
@@ -40,13 +55,13 @@ const Popover = ({ keywords, textformats, editorRef, selectedFormat }) => {
         </div>
         <div className="text-base ">
           <span className="text-gray-600">Filtering Keywords&nbsp;</span>
-          <span className="bg-sky-700 text-white px-[0.3rem] py-1 rounded-[4px]">{keyword.length}</span>
+          <span className="bg-sky-700 text-white px-[0.3rem] py-1 rounded-[4px]">{keywords.length}</span>
         </div>
       </div>
       <ul className="flex flex-col overflow-y-auto overflow-x-hidden w-full h-3/4">
         {
           textformats
-          .filter((textFormat) => keyword.length === 0 || textFormat.format.match(searchPattern).length === keyword.length)
+          .filter((textFormat) => keywords.length === 0 || textFormat.format.match(searchPattern)?.length === keywords.length)
           .map((item, index) => (
             <li key={index} className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 cursor-pointer", `${selectedFormat === index && "bg-gray-200"}`)}>
               <Pencil color="#000000" />

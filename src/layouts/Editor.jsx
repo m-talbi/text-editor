@@ -6,37 +6,33 @@ import Seperator from '../components/Seperator';
 import { getTextType } from '../utils/utils';
 import textformats from '../constants/formats';
 
+
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [selectedFormat, setSelectedFormat] = useState(0);
-  const command = useRef({ value: "", indexOfSlash: -1 });
+  const command = useRef("");
   const contentEditableRef = useRef(null);
+  const keywords = command.current.slice(1).replace(/ /g, "");
 
   useEffect(() => {
-    const slashIndex = command.current.indexOfSlash;
-
-    if (slashIndex < 0 || text[slashIndex] !== '/') {
-      command.current = { value: "", indexOfSlash: -1 };
+    if (command.current == "") {
       setIsPopoverOpen(false);
     }
-    console.log(command.current);
-  }, [command.current.value, text]);
+  }, [text]);
   
   const inputText = (ev) => {
     const userInput = getTextType(ev.nativeEvent.data);
 
     onTextUpdate(ev.target.outerText);
 
-    if (userInput.type == "command") {
-      command.current = { value: userInput.value, indexOfSlash: text.length };
+    if (userInput.type == "command" && command.current === "") {
+      command.current = userInput.value;
       setIsPopoverOpen(true);
       return;
     }
 
-    if (command.current.value != "") {
-      const value = command.current.value
-      const newValue =  userInput.value ? value + userInput.value : value.slice(0, value.length - 1);
-      command.current = { ...command.current, value: newValue };
+    if (command.current != "") {
+      const value = command.current
+      command.current = userInput.value ? value + userInput.value : value.slice(0, value.length - 1);
     }
   }
 
@@ -60,10 +56,9 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
         />
         {isPopoverOpen &&
           <Popover
-            keywords={command.current.value.slice(1)}
+            keywords={keywords}
             textformats={textformats}
-            editorRef={contentEditableRef}
-            selectedFormat={selectedFormat}
+            editorEl={contentEditableRef.current}
           />
         }
       </div>

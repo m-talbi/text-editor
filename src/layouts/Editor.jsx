@@ -8,6 +8,7 @@ import textformats from '../constants/formats';
 
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
+  const [format, setFormat] = useState(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const command = useRef("");
   const contentEditableRef = useRef(null);
@@ -59,6 +60,8 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
             keywords={keywords}
             textformats={textformats}
             editorEl={contentEditableRef.current}
+            onClose={() => setIsPopoverOpen(false)}
+            onFormatSelect={setFormat}
           />
         }
       </div>

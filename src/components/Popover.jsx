@@ -5,27 +5,61 @@ import { twMerge } from "tailwind-merge";
 import { useKeyPress } from '../hooks/useKeypress';
 import { clearSelection, restoreCaretPosition, saveCaretPosition, getCaretRect } from '../utils/getCaretRect';
 
-const Popover = ({ keywords, textformats, editorEl }) => {
+const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) => {
+  const [isFormatSelected, setIsFormatSelected] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState(0);
-  const popoverRef = useRef(null);
   const searchPattern = new RegExp(keywords.split("").join('|'), 'gi');
   let { x, y } = getCaretRect(editorEl);
-  // const savedSelection = useRef(null);
+  const popoverRef = useRef(null);
+  const savedSelection = useRef(null);
   const left = useRef(0);
   const top = useRef(0);
 
-  useKeyPress("ArrowUp", () => {
+  const hideCaret = () => {
+    savedSelection.current = saveCaretPosition();
     editorEl.blur();
     clearSelection();
-    setSelectedFormat((prev) => prev - 1 >= 0 ? prev - 1 : 0);
+  }
+
+  const restoreCaret = () => {
+    restoreCaretPosition(editorEl, savedSelection.current);
+    savedSelection.current = null;
+  }
+
+  useKeyPress((ev) => {
+    if (document.activeElement.nodeName !== "BODY" && document.activeElement !== editorEl) {
+      onClose();
+      return;
+    }
+
+    const key = ev.key;
+    const isCaretVisible = !savedSelection.current;
+
+    if (key === "Enter") {
+      hideCaret();
+      setIsFormatSelected(true);
+    } else if (key === "Escape") {
+      restoreCaret();
+      onClose();
+    } else if (key === "ArrowUp") {
+      if (isCaretVisible) hideCaret();
+      setSelectedFormat((prev) => Math.max(prev - 1, 0));
+    } else if (key === "ArrowDown") {
+      if (isCaretVisible) hideCaret();
+      setSelectedFormat((prev) => Math.min(prev + 1, textformats.length));
+    } else {
+      if (isCaretVisible) return;
+      restoreCaret();
+      setSelectedFormat(0);
+    }
   });
 
-  useKeyPress("ArrowDown", () => {
-    editorEl.blur();
-    clearSelection();
-    const formatsLength = textformats.length - 1;
-    setSelectedFormat((prev) => prev + 1 <= formatsLength ? prev + 1 : formatsLength);
-  });
+  useEffect(() => {
+    if (isFormatSelected) {
+      onFormatSelect(textformats[selectedFormat]);
+      onClose();
+    }
+  }, [isFormatSelected]);
 
   useEffect(() => {
     if (!popoverRef.current || editorEl !== document.activeElement) return;
@@ -37,11 +71,11 @@ const Popover = ({ keywords, textformats, editorEl }) => {
       }
     }
 
-    left.current = x ? x - (popoverRef.current.offsetWidth / 2) - 10 : 0;
-    top.current = y ? y - (popoverRef.current.offsetHeight / 2) + 10 : 30;
+    left.current = x - (popoverRef.current.offsetWidth / 2) - 10 || 0;
+    top.current = y - (popoverRef.current.offsetHeight / 2) + 10 || 30;
 
     movePopoverToCaret();
-  }, [editorEl, editorEl.offsetWidth, x, y]);
+  }, [editorEl, x, y]);
 
 
   return (
@@ -58,7 +92,7 @@ const Popover = ({ keywords, textformats, editorEl }) => {
           <span className="bg-sky-700 text-white px-[0.3rem] py-1 rounded-[4px]">{keywords.length}</span>
         </div>
       </div>
-      <ul className="flex flex-col overflow-y-auto overflow-x-hidden w-full h-3/4">
+      <ul className="flex flex-col overflow-y-scroll overflow-x-hidden w-full h-3/4">
         {
           textformats
           .filter((textFormat) => keywords.length === 0 || textFormat.format.match(searchPattern)?.length === keywords.length)

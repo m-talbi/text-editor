@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import { Pencil } from "lucide-react"
 import { useEffect, useRef, useState } from "react";
-import { twMerge } from "tailwind-merge";
 import { useKeyPress } from '../hooks/useKeypress';
 import { clearSelection, restoreCaretPosition, saveCaretPosition, getCaretRect } from '../utils/getCaretRect';
 
@@ -12,6 +11,7 @@ const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) =
   let { x, y } = getCaretRect(editorEl);
   const popoverRef = useRef(null);
   const savedSelection = useRef(null);
+  const hoveredFormatRef = useRef(null);
   const left = useRef(0);
   const top = useRef(0);
 
@@ -46,7 +46,7 @@ const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) =
       setSelectedFormat((prev) => Math.max(prev - 1, 0));
     } else if (key === "ArrowDown") {
       if (isCaretVisible) hideCaret();
-      setSelectedFormat((prev) => Math.min(prev + 1, textformats.length));
+      setSelectedFormat((prev) => Math.min(prev + 1, textformats.length - 1));
     } else {
       if (isCaretVisible) return;
       restoreCaret();
@@ -58,8 +58,11 @@ const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) =
     if (isFormatSelected) {
       onFormatSelect(textformats[selectedFormat]);
       onClose();
+      return;
     }
-  }, [isFormatSelected]);
+
+    hoveredFormatRef.current.scrollIntoView({ behavior: "smooth", block: 'nearest' });
+  }, [isFormatSelected, selectedFormat]);
 
   useEffect(() => {
     if (!popoverRef.current || editorEl !== document.activeElement) return;
@@ -96,15 +99,25 @@ const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) =
         {
           textformats
           .filter((textFormat) => keywords.length === 0 || textFormat.format.match(searchPattern)?.length === keywords.length)
-          .map((item, index) => (
-            <li key={index} className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 cursor-pointer", `${selectedFormat === index && "bg-gray-200"}`)}>
+          .map((item, index) => {
+            return selectedFormat === index ? (
+              <li ref={hoveredFormatRef} key={index} className="flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 cursor-pointer bg-gray-200">
+                <Pencil color="#000000" />
+                <div>
+                  <p className="text-gray-700 font-bold text-lg">{item.format}</p>
+                  <p className="text-gray-400 text-sm">Shortcut: type {item.shortcut}</p>
+                </div>
+              </li>
+            ) : (           
+            <li key={index} className="flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 cursor-pointer">
               <Pencil color="#000000" />
               <div>
                 <p className="text-gray-700 font-bold text-lg">{item.format}</p>
                 <p className="text-gray-400 text-sm">Shortcut: type {item.shortcut}</p>
               </div>
             </li>
-          ))
+            )
+          })
         }
       </ul>
     </div>

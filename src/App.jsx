@@ -26,8 +26,8 @@ function App() {
     setTitle(ev.target.value)
   }
 
-  const updateText = (ev) => {
-    setText(ev.target.outerText)
+  const updateText = (text) => {
+    setText(text);
   }
 
   return (

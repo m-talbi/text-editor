@@ -1,20 +1,41 @@
 /* eslint-disable react/prop-types */
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ContentEditable from '../components/ContentEditable';
 import Popover from '../components/Popover';
 import Seperator from '../components/Seperator';
+import { getTextType } from '../utils/utils';
+import textformats from '../constants/formats';
+
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
-  const textformats = [
-    {format: "Heading 1", shortcut: "# + space"},
-    {format: "Heading 2", shortcut: "## + space"},
-    {format: "Heading 3", shortcut: "### + space"},
-    {format: "Heading 4", shortcut: "#### + space"},
-    {format: "Heading 5", shortcut: "##### + space"},
-    {format: "Heading 6", shortcut: "###### + space"},
-  ]
-
+  const [format, setFormat] = useState(null);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const command = useRef("");
   const contentEditableRef = useRef(null);
+  const keywords = command.current.slice(1).replace(/ /g, "");
+
+  useEffect(() => {
+    if (command.current == "") {
+      setIsPopoverOpen(false);
+    }
+  }, [text]);
+  
+  const inputText = (ev) => {
+    const userInput = getTextType(ev.nativeEvent.data);
+
+    onTextUpdate(ev.target.outerText);
+
+    if (userInput.type == "command" && command.current === "") {
+      command.current = userInput.value;
+      setIsPopoverOpen(true);
+      return;
+    }
+
+    if (command.current != "") {
+      const value = command.current
+      command.current = userInput.value ? value + userInput.value : value.slice(0, value.length - 1);
+    }
+  }
 
   return (
     <div className='flex flex-col mt-6'>
@@ -31,14 +52,18 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
         <ContentEditable
           ref={contentEditableRef}
           value={text}
-          onInput={onTextUpdate}
+          onInput={inputText}
           placeholder='Type / for blocks, or @ to link docs or people'
         />
-        <Popover
-          keywords={['link', 'docs', 'people']}
-          textformats={textformats}
-          editorRef={contentEditableRef}
-        />
+        {isPopoverOpen &&
+          <Popover
+            keywords={keywords}
+            textformats={textformats}
+            editorEl={contentEditableRef.current}
+            onClose={() => setIsPopoverOpen(false)}
+            onFormatSelect={setFormat}
+          />
+        }
       </div>
     </div>
   )

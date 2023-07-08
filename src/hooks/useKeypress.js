@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 
-export const useKeyPress = (targetKey, callback) => {
+export const useKeyPress = (callback) => {
 
   const downHandler = (ev) => {
-    if (ev.key === targetKey) callback(ev);
+    callback(ev);
   };
 
   useEffect(() => {

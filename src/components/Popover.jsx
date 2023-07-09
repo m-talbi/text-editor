@@ -1,19 +1,52 @@
 /* eslint-disable react/prop-types */
-import { Pencil } from "lucide-react"
 import { useEffect, useRef, useState } from "react";
-import { twMerge } from "tailwind-merge";
 import { useKeyPress } from '../hooks/useKeypress';
-import { clearSelection, restoreCaretPosition, saveCaretPosition, getCaretRect } from '../utils/getCaretRect';
+import { restoreCaretPosition, getCaretRect, clearSelection, saveCaretPosition } from '../utils/getCaretRect';
+import { sortByMatchedCharacters } from "../utils/utils";
+import PopoverList from "./PopoverList";
+import usePopoverPosition from "../hooks/usePopoverPosition";
+import formats from '../constants/formats';
 
-const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) => {
+const Popover = ({ keywords, editorEl, onClose, onFormatSelect }) => {
   const [isFormatSelected, setIsFormatSelected] = useState(false);
-  const [selectedFormat, setSelectedFormat] = useState(0);
-  const searchPattern = new RegExp(keywords.split("").join('|'), 'gi');
-  let { x, y } = getCaretRect(editorEl);
-  const popoverRef = useRef(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [sortedFormats, setSortedFormats] = useState(formats);
   const savedSelection = useRef(null);
-  const left = useRef(0);
-  const top = useRef(0);
+
+  let { x, y } = getCaretRect(editorEl);
+  const popoverRef = usePopoverPosition(editorEl, {x, y});
+
+  useKeyPress((ev) => {
+    if (document.activeElement.nodeName !== "BODY" && document.activeElement !== editorEl) {
+      onClose();
+      return;
+    }
+
+    const key = ev.key;
+    const isCaretVisible = !savedSelection.current;
+
+    if (key === "Enter") setIsFormatSelected(true);
+    else if (key === "ArrowUp") {
+      if (isCaretVisible) hideCaret();
+      selectPreviousItem();
+    } else if (key === "ArrowDown") {
+      if (isCaretVisible) hideCaret();
+      selectNextItem();
+    } else if (key === "Escape") {
+      restoreCaret();
+      onClose();
+    } else if (!isCaretVisible) restoreCaret();
+  });
+
+  useEffect(() => {
+    setSortedFormats(sortByMatchedCharacters(keywords, formats));
+  }, [keywords]);
+
+  useEffect(() => {
+    if (isFormatSelected) {
+      onItemSelect(selectedIndex);
+    }
+  }, [isFormatSelected]);
 
   const hideCaret = () => {
     savedSelection.current = saveCaretPosition();
@@ -26,57 +59,19 @@ const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) =
     savedSelection.current = null;
   }
 
-  useKeyPress((ev) => {
-    if (document.activeElement.nodeName !== "BODY" && document.activeElement !== editorEl) {
-      onClose();
-      return;
-    }
+  const selectPreviousItem = () => {
+    setSelectedIndex((prev) => Math.max(prev - 1, 0));
+  };
 
-    const key = ev.key;
-    const isCaretVisible = !savedSelection.current;
+  const selectNextItem = () => {
+    setSelectedIndex((prev) => Math.min(prev + 1, sortedFormats.length - 1));
+  };
 
-    if (key === "Enter") {
-      hideCaret();
-      setIsFormatSelected(true);
-    } else if (key === "Escape") {
-      restoreCaret();
-      onClose();
-    } else if (key === "ArrowUp") {
-      if (isCaretVisible) hideCaret();
-      setSelectedFormat((prev) => Math.max(prev - 1, 0));
-    } else if (key === "ArrowDown") {
-      if (isCaretVisible) hideCaret();
-      setSelectedFormat((prev) => Math.min(prev + 1, textformats.length));
-    } else {
-      if (isCaretVisible) return;
-      restoreCaret();
-      setSelectedFormat(0);
-    }
-  });
-
-  useEffect(() => {
-    if (isFormatSelected) {
-      onFormatSelect(textformats[selectedFormat]);
-      onClose();
-    }
-  }, [isFormatSelected]);
-
-  useEffect(() => {
-    if (!popoverRef.current || editorEl !== document.activeElement) return;
-
-    function movePopoverToCaret() {
-      popoverRef.current.style.top = top.current + "px";
-      if (editorEl.offsetWidth - left.current > popoverRef.current.offsetWidth) {
-        popoverRef.current.style.left = left.current + "px";
-      }
-    }
-
-    left.current = x - (popoverRef.current.offsetWidth / 2) - 10 || 0;
-    top.current = y - (popoverRef.current.offsetHeight / 2) + 10 || 30;
-
-    movePopoverToCaret();
-  }, [editorEl, x, y]);
-
+  const onItemSelect = (index) => {
+    hideCaret();
+    onFormatSelect(sortedFormats[index]);
+    onClose();
+  };
 
   return (
     <div
@@ -92,21 +87,11 @@ const Popover = ({ keywords, textformats, editorEl, onClose, onFormatSelect }) =
           <span className="bg-sky-700 text-white px-[0.3rem] py-1 rounded-[4px]">{keywords.length}</span>
         </div>
       </div>
-      <ul className="flex flex-col overflow-y-scroll overflow-x-hidden w-full h-3/4">
-        {
-          textformats
-          .filter((textFormat) => keywords.length === 0 || textFormat.format.match(searchPattern)?.length === keywords.length)
-          .map((item, index) => (
-            <li key={index} className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 cursor-pointer", `${selectedFormat === index && "bg-gray-200"}`)}>
-              <Pencil color="#000000" />
-              <div>
-                <p className="text-gray-700 font-bold text-lg">{item.format}</p>
-                <p className="text-gray-400 text-sm">Shortcut: type {item.shortcut}</p>
-              </div>
-            </li>
-          ))
-        }
-      </ul>
+      <PopoverList
+        items={sortedFormats}
+        selectedIndex={selectedIndex}
+        onItemClick={onItemSelect}
+      />
     </div>
   )
 }

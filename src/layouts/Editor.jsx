@@ -4,7 +4,6 @@ import ContentEditable from '../components/ContentEditable';
 import Popover from '../components/Popover';
 import Seperator from '../components/Seperator';
 import { getTextType } from '../utils/utils';
-import textformats from '../constants/formats';
 
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
@@ -58,7 +57,6 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
         {isPopoverOpen &&
           <Popover
             keywords={keywords}
-            textformats={textformats}
             editorEl={contentEditableRef.current}
             onClose={() => setIsPopoverOpen(false)}
             onFormatSelect={setFormat}

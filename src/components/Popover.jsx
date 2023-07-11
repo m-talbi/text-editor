@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useKeyPress } from '../hooks/useKeypress';
 import { restoreCaretPosition, getCaretRect, clearSelection, saveCaretPosition } from '../utils/getCaretRect';
 import { sortByMatchedCharacters } from "../utils/utils";
@@ -7,11 +7,10 @@ import PopoverList from "./PopoverList";
 import usePopoverPosition from "../hooks/usePopoverPosition";
 import formats from '../constants/formats';
 
-const Popover = ({ keywords, editorEl, onClose, onFormatSelect }) => {
+const Popover = ({ keywords, editorEl, onClose, onFormatSelect, savedSelection }) => {
   const [isFormatSelected, setIsFormatSelected] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [sortedFormats, setSortedFormats] = useState(formats);
-  const savedSelection = useRef(null);
+  const [sortedFormats] = useState(sortByMatchedCharacters(keywords, formats));
 
   let { x, y } = getCaretRect(editorEl);
   const popoverRef = usePopoverPosition(editorEl, {x, y});
@@ -27,20 +26,16 @@ const Popover = ({ keywords, editorEl, onClose, onFormatSelect }) => {
 
     if (key === "Enter") setIsFormatSelected(true);
     else if (key === "ArrowUp") {
-      if (isCaretVisible) hideCaret();
+      ev.preventDefault();
       selectPreviousItem();
     } else if (key === "ArrowDown") {
-      if (isCaretVisible) hideCaret();
+      ev.preventDefault();
       selectNextItem();
     } else if (key === "Escape") {
       restoreCaret();
       onClose();
     } else if (!isCaretVisible) restoreCaret();
   });
-
-  useEffect(() => {
-    setSortedFormats(sortByMatchedCharacters(keywords, formats));
-  }, [keywords]);
 
   useEffect(() => {
     if (isFormatSelected) {

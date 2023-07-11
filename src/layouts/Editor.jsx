@@ -4,7 +4,7 @@ import ContentEditable from '../components/ContentEditable';
 import Popover from '../components/Popover';
 import Seperator from '../components/Seperator';
 import { getTextType } from '../utils/utils';
-
+import { restoreCaretPosition } from '../utils/getCaretRect';
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   const [format, setFormat] = useState(null);
@@ -12,12 +12,31 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   const command = useRef("");
   const contentEditableRef = useRef(null);
   const keywords = command.current.slice(1).replace(/ /g, "");
+  const caretRange = useRef(null);
 
   useEffect(() => {
     if (command.current == "") {
       setIsPopoverOpen(false);
     }
   }, [text]);
+
+  useEffect(() => {
+    if (!caretRange.current) return;
+
+    deleteCommandFromEditor();
+    restoreCaretPosition(contentEditableRef.current, caretRange.current);
+    onTextUpdate(contentEditableRef.current.textContent);
+
+    command.current = "";
+    caretRange.current = null;
+  }, [format]);
+
+  const deleteCommandFromEditor = () => {
+    const start = Math.max(caretRange.current.endOffset - command.current.length, 0);
+    caretRange.current.setStart(contentEditableRef.current, start);
+    caretRange.current.setEnd(contentEditableRef.current, caretRange.current.endOffset);
+    caretRange.current.deleteContents();
+  }
   
   const inputText = (ev) => {
     const userInput = getTextType(ev.nativeEvent.data);
@@ -25,6 +44,7 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
     onTextUpdate(ev.target.outerText);
 
     if (userInput.type == "command" && command.current === "") {
+      setFormat(null);
       command.current = userInput.value;
       setIsPopoverOpen(true);
       return;
@@ -58,6 +78,7 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
           <Popover
             keywords={keywords}
             editorEl={contentEditableRef.current}
+            savedSelection={caretRange}
             onClose={() => setIsPopoverOpen(false)}
             onFormatSelect={setFormat}
           />

@@ -11,8 +11,9 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const command = useRef("");
   const contentEditableRef = useRef(null);
-  const keywords = command.current.slice(1).replace(/ /g, "");
   const caretRange = useRef(null);
+  
+  const keywords = command.current.slice(1).replace(/ /g, "");
 
   useEffect(() => {
     if (command.current == "") {
@@ -33,8 +34,13 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
 
   const deleteCommandFromEditor = () => {
     const start = Math.max(caretRange.current.endOffset - command.current.length, 0);
-    caretRange.current.setStart(contentEditableRef.current, start);
-    caretRange.current.setEnd(contentEditableRef.current, caretRange.current.endOffset);
+    const end = caretRange.current.endOffset;
+    let container = caretRange.current.startContainer;
+
+    if (start === 0) container = contentEditableRef.current;
+
+    caretRange.current.setStart(container, start);
+    caretRange.current.setEnd(container, end);
     caretRange.current.deleteContents();
   }
   
@@ -54,6 +60,15 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
       const value = command.current
       command.current = userInput.value ? value + userInput.value : value.slice(0, value.length - 1);
     }
+  }
+
+  const handlePopoverClose = () => {
+    setIsPopoverOpen(false);
+  }
+
+  const handleEscapePress = () => {
+    command.current = "";
+    setIsPopoverOpen(false);
   }
 
   return (
@@ -79,7 +94,8 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
             keywords={keywords}
             editorEl={contentEditableRef.current}
             savedSelection={caretRange}
-            onClose={() => setIsPopoverOpen(false)}
+            onClose={handlePopoverClose}
+            onEscapePress={handleEscapePress}
             onFormatSelect={setFormat}
           />
         }

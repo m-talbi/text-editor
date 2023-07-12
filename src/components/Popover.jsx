@@ -7,7 +7,7 @@ import PopoverList from "./PopoverList";
 import usePopoverPosition from "../hooks/usePopoverPosition";
 import formats from '../constants/formats';
 
-const Popover = ({ keywords, editorEl, onClose, onFormatSelect, savedSelection }) => {
+const Popover = ({ keywords, editorEl, onClose, onEscapePress, onFormatSelect, savedSelection }) => {
   const [isFormatSelected, setIsFormatSelected] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [sortedFormats] = useState(sortByMatchedCharacters(keywords, formats));
@@ -33,7 +33,7 @@ const Popover = ({ keywords, editorEl, onClose, onFormatSelect, savedSelection }
       selectNextItem();
     } else if (key === "Escape") {
       restoreCaret();
-      onClose();
+      onEscapePress();
     } else if (!isCaretVisible) restoreCaret();
   });
 

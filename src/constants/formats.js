@@ -6,6 +6,7 @@ const formats = [
   {format: "Heading 5", tag: "h5", shortcut: "##### + space"},
   {format: "Heading 6", tag: "h6", shortcut: "###### + space"},
   {format: "Bold", tag: "b", shortcut: "** + space"},
+  {format: "Italtic", tag: "i", shortcut: "* + space"},
 ];
 
 export default formats;

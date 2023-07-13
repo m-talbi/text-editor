@@ -6,3 +6,7 @@
 body {
   font-family: 'Roboto', sans-serif;
 }
+
+.b {
+  @apply font-extrabold text-lg text-slate-800
+}

@@ -21,7 +21,7 @@ const ContentEditable = forwardRef(({ onInput, placeholder, className }, ref) =>
     <div
       ref={ref}
       data-placeholder={placeholder}
-      className={twMerge('w-full text-slate-700 text-base font-medium focus-within:outline-none whitespace-pre-wrap break-words before:text-slate-400 before:cursor-text empty:before:content-[attr(data-placeholder)]', className)}
+      className={twMerge('w-full text-slate-700 text-base font-normal focus-within:outline-none whitespace-pre-wrap break-words before:text-slate-400 before:cursor-text empty:before:content-[attr(data-placeholder)]', className)}
       contentEditable
       suppressContentEditableWarning
       onPaste={pasteAsPlainText}

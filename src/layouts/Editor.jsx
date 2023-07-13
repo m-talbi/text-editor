@@ -5,6 +5,7 @@ import Popover from '../components/Popover';
 import Seperator from '../components/Seperator';
 import { getTextType } from '../utils/utils';
 import { restoreCaretPosition } from '../utils/getCaretRect';
+import { addElementAtSelection } from '../utils/addElementAtSelection';
 
 const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   const [format, setFormat] = useState(null);
@@ -22,23 +23,24 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   }, [text]);
 
   useEffect(() => {
-    if (!caretRange.current) return;
+    if (!caretRange.current && !format) return;
 
-    deleteCommandFromEditor();
+    let container = caretRange.current.startContainer;
+    const start = Math.max(caretRange.current.endOffset - command.current.length, 0);
+    const end = caretRange.current.endOffset;
+    if (start === 0) container = contentEditableRef.current;
+
+    deleteCommandFromEditor(container, caretRange, start, end);
     restoreCaretPosition(contentEditableRef.current, caretRange.current);
+    addElementAtSelection(contentEditableRef.current, caretRange.current, format);
     onTextUpdate(contentEditableRef.current.textContent);
 
     command.current = "";
     caretRange.current = null;
+    setFormat(null);
   }, [format]);
 
-  const deleteCommandFromEditor = () => {
-    const start = Math.max(caretRange.current.endOffset - command.current.length, 0);
-    const end = caretRange.current.endOffset;
-    let container = caretRange.current.startContainer;
-
-    if (start === 0) container = contentEditableRef.current;
-
+  const deleteCommandFromEditor = (container, caretRange, start, end) => {
     caretRange.current.setStart(container, start);
     caretRange.current.setEnd(container, end);
     caretRange.current.deleteContents();

@@ -6,21 +6,26 @@ import Seperator from '../components/Seperator';
 import { getTextType } from '../utils/utils';
 import { restoreCaretPosition } from '../utils/getCaretRect';
 import { addElementAtSelection } from '../utils/addElementAtSelection';
+import { useKeyPress } from '../hooks/useKeypress';
+import { breakElementAtSelection } from '../utils/lineBreak';
 
-const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
+const Editor = ({ title, onTitleUpdate }) => {
   const [format, setFormat] = useState(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const command = useRef("");
   const contentEditableRef = useRef(null);
   const caretRange = useRef(null);
+  const addedElement = useRef(null);
   
-  const keywords = command.current.slice(1).replace(/ /g, "");
+  const [keywords, setKeywords] = useState(command.current.slice(1).replace(/ /g, ""));
 
-  useEffect(() => {
-    if (command.current == "") {
-      setIsPopoverOpen(false);
+  useKeyPress((ev) => {
+    if (ev.key === "Enter" && command.current == "") {
+      console.log("Enter");
+      ev.preventDefault();
+      breakElementAtSelection(contentEditableRef.current);
     }
-  }, [text]);
+  })
 
   useEffect(() => {
     if (!caretRange.current && !format) return;
@@ -32,8 +37,7 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
 
     deleteCommandFromEditor(container, caretRange, start, end);
     restoreCaretPosition(contentEditableRef.current, caretRange.current);
-    addElementAtSelection(contentEditableRef.current, caretRange.current, format);
-    onTextUpdate(contentEditableRef.current.textContent);
+    addedElement.current = addElementAtSelection(format, contentEditableRef.current);
 
     command.current = "";
     caretRange.current = null;
@@ -49,8 +53,6 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
   const inputText = (ev) => {
     const userInput = getTextType(ev.nativeEvent.data);
 
-    onTextUpdate(ev.target.outerText);
-
     if (userInput.type == "command" && command.current === "") {
       setFormat(null);
       command.current = userInput.value;
@@ -61,6 +63,7 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
     if (command.current != "") {
       const value = command.current
       command.current = userInput.value ? value + userInput.value : value.slice(0, value.length - 1);
+      setKeywords(keywords + userInput.value);
     }
   }
 
@@ -87,7 +90,6 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
       <div className='relative'>
         <ContentEditable
           ref={contentEditableRef}
-          value={text}
           onInput={inputText}
           placeholder='Type / for blocks, or @ to link docs or people'
         />

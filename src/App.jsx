@@ -15,7 +15,6 @@ const breadCrumbs = [
 
 function App() {
   const [title, setTitle] = useState('')
-  const [text, setText] = useState('')
 
   const updateTitle = (ev) => {
     if (ev.key === 'Enter') {
@@ -24,10 +23,6 @@ function App() {
     }
 
     setTitle(ev.target.value)
-  }
-
-  const updateText = (text) => {
-    setText(text);
   }
 
   return (
@@ -42,9 +37,7 @@ function App() {
         />
         <Editor
           title={title}
-          text={text}
           onTitleUpdate={updateTitle}
-          onTextUpdate={updateText}
         />
       </Container>
     </main>

@@ -41,6 +41,7 @@ const Editor = ({ title, onTitleUpdate }) => {
 
     command.current = "";
     caretRange.current = null;
+    setKeywords("");
     setFormat(null);
   }, [format]);
 

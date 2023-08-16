@@ -24,8 +24,10 @@ const Popover = ({ keywords, editorEl, onClose, onEscapePress, onFormatSelect, s
     const key = ev.key;
     const isCaretVisible = !savedSelection.current;
 
-    if (key === "Enter") setIsFormatSelected(true);
-    else if (key === "ArrowUp") {
+    if (key === "Enter") {
+      ev.preventDefault();
+      setIsFormatSelected(true);
+    } else if (key === "ArrowUp") {
       ev.preventDefault();
       selectPreviousItem();
     } else if (key === "ArrowDown") {

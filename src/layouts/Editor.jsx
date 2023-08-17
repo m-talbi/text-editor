@@ -15,13 +15,11 @@ const Editor = ({ title, onTitleUpdate }) => {
   const command = useRef("");
   const contentEditableRef = useRef(null);
   const caretRange = useRef(null);
-  const addedElement = useRef(null);
   
   const [keywords, setKeywords] = useState(command.current.slice(1).replace(/ /g, ""));
 
   useKeyPress((ev) => {
     if (ev.key === "Enter" && command.current == "") {
-      console.log("Enter");
       ev.preventDefault();
       breakElementAtSelection(contentEditableRef.current);
     }
@@ -33,11 +31,10 @@ const Editor = ({ title, onTitleUpdate }) => {
     let container = caretRange.current.startContainer;
     const start = Math.max(caretRange.current.endOffset - command.current.length, 0);
     const end = caretRange.current.endOffset;
-    if (start === 0) container = contentEditableRef.current;
 
     deleteCommandFromEditor(container, caretRange, start, end);
     restoreCaretPosition(contentEditableRef.current, caretRange.current);
-    addedElement.current = addElementAtSelection(format, contentEditableRef.current);
+    addElementAtSelection(format, contentEditableRef.current);
 
     command.current = "";
     caretRange.current = null;

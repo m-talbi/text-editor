@@ -6,50 +6,53 @@ import Seperator from '../components/Seperator';
 import { getTextType } from '../utils/utils';
 import { restoreCaretPosition } from '../utils/getCaretRect';
 import { addElementAtSelection } from '../utils/addElementAtSelection';
+import { useKeyPress } from '../hooks/useKeypress';
+import { breakElementAtSelection } from '../utils/lineBreak';
 
-const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
+const Editor = ({ title, onTitleUpdate }) => {
   const [format, setFormat] = useState(null);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const command = useRef("");
   const contentEditableRef = useRef(null);
   const caretRange = useRef(null);
-  
-  const keywords = command.current.slice(1).replace(/ /g, "");
 
-  useEffect(() => {
-    if (command.current == "") {
-      setIsPopoverOpen(false);
+  const [keywords, setKeywords] = useState(command.current.slice(1).replace(/ /g, ""));
+
+  useKeyPress((ev) => {
+    if (ev.key === "Enter" && command.current == "") {
+      ev.preventDefault();
+      breakElementAtSelection(contentEditableRef.current);
     }
-  }, [text]);
+  })
 
   useEffect(() => {
     if (!caretRange.current && !format) return;
 
+    deleteCommandFromEditor(caretRange);
+    restoreCaretPosition(contentEditableRef.current, caretRange.current);
+    addElementAtSelection(format, contentEditableRef.current, caretRange.current);
+    resetStates();
+  }, [format]);
+
+  const deleteCommandFromEditor = (caretRange) => {
     let container = caretRange.current.startContainer;
     const start = Math.max(caretRange.current.endOffset - command.current.length, 0);
     const end = caretRange.current.endOffset;
-    if (start === 0) container = contentEditableRef.current;
 
-    deleteCommandFromEditor(container, caretRange, start, end);
-    restoreCaretPosition(contentEditableRef.current, caretRange.current);
-    addElementAtSelection(contentEditableRef.current, caretRange.current, format);
-    onTextUpdate(contentEditableRef.current.textContent);
-
-    command.current = "";
-    caretRange.current = null;
-    setFormat(null);
-  }, [format]);
-
-  const deleteCommandFromEditor = (container, caretRange, start, end) => {
     caretRange.current.setStart(container, start);
     caretRange.current.setEnd(container, end);
     caretRange.current.deleteContents();
   }
-  
+
+  const resetStates = () => {
+    command.current = "";
+    caretRange.current = null;
+    setKeywords("");
+    setFormat(null);
+  }
+
   const inputText = (ev) => {
     const userInput = getTextType(ev.nativeEvent.data);
-
-    onTextUpdate(ev.target.outerText);
 
     if (userInput.type == "command" && command.current === "") {
       setFormat(null);
@@ -61,6 +64,7 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
     if (command.current != "") {
       const value = command.current
       command.current = userInput.value ? value + userInput.value : value.slice(0, value.length - 1);
+      setKeywords(keywords + userInput.value);
     }
   }
 
@@ -87,7 +91,6 @@ const Editor = ({ title, text, onTitleUpdate, onTextUpdate }) => {
       <div className='relative'>
         <ContentEditable
           ref={contentEditableRef}
-          value={text}
           onInput={inputText}
           placeholder='Type / for blocks, or @ to link docs or people'
         />

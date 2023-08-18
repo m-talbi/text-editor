@@ -8,5 +8,5 @@ body {
 }
 
 .b {
-  @apply font-extrabold text-lg text-slate-800
+  @apply font-bold text-slate-800
 }

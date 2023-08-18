@@ -1,8 +1,7 @@
 import { getSelectedNode } from "./getSelectedNode";
 
-export const addElementAtSelection = (format, parentDiv) => {
+export const addElementAtSelection = (format, parentDiv, caretRange) => {
   const selectedNode = getSelectedNode();
-  const range = selectedNode.selection.getRangeAt(0);
   const elem = document.createElement(format.tag);
   elem.classList.add(...format.classes);
 
@@ -17,21 +16,26 @@ export const addElementAtSelection = (format, parentDiv) => {
     nodeBeforeCaret.textContent = selectedNodeContent.substring(0, selectedNodeCaretIndex);
     nodeAfterCaret.textContent = selectedNodeContent.substring(selectedNodeCaretIndex);
 
-    selectedNode.node.parentNode.insertBefore(nodeBeforeCaret, selectedNode.node);
+    if (nodeBeforeCaret.textContent.length != 0) {
+      selectedNode.node.parentNode.insertBefore(nodeBeforeCaret, selectedNode.node);
+    }
+
     selectedNode.node.parentNode.insertBefore(elem, selectedNode.node);
-    selectedNode.node.parentNode.insertBefore(nodeAfterCaret, selectedNode.node.nextSibling);
+
+    if (nodeAfterCaret.textContent.length != 0) {
+      selectedNode.node.parentNode.insertBefore(nodeAfterCaret, selectedNode.node.nextSibling);
+    }
 
     selectedNode.node.remove();
   } else {
-    range.insertNode(elem);
+    caretRange.insertNode(elem);
   }
 
-  elem.focus();
+  const textNode = document.createTextNode('\0');
+  elem.appendChild(textNode);
+  caretRange.selectNodeContents(textNode);
 
-  // Place the caret at the end of the newly added element
-  range.selectNodeContents(elem);
   selectedNode.selection.removeAllRanges();
-  selectedNode.selection.addRange(range);
-
-  return elem;
+  selectedNode.selection.addRange(caretRange);
+  elem.focus();
 }

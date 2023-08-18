@@ -15,7 +15,7 @@ const Editor = ({ title, onTitleUpdate }) => {
   const command = useRef("");
   const contentEditableRef = useRef(null);
   const caretRange = useRef(null);
-  
+
   const [keywords, setKeywords] = useState(command.current.slice(1).replace(/ /g, ""));
 
   useKeyPress((ev) => {
@@ -28,26 +28,29 @@ const Editor = ({ title, onTitleUpdate }) => {
   useEffect(() => {
     if (!caretRange.current && !format) return;
 
+    deleteCommandFromEditor(caretRange);
+    restoreCaretPosition(contentEditableRef.current, caretRange.current);
+    addElementAtSelection(format, contentEditableRef.current, caretRange.current);
+    resetStates();
+  }, [format]);
+
+  const deleteCommandFromEditor = (caretRange) => {
     let container = caretRange.current.startContainer;
     const start = Math.max(caretRange.current.endOffset - command.current.length, 0);
     const end = caretRange.current.endOffset;
 
-    deleteCommandFromEditor(container, caretRange, start, end);
-    restoreCaretPosition(contentEditableRef.current, caretRange.current);
-    addElementAtSelection(format, contentEditableRef.current);
-
-    command.current = "";
-    caretRange.current = null;
-    setKeywords("");
-    setFormat(null);
-  }, [format]);
-
-  const deleteCommandFromEditor = (container, caretRange, start, end) => {
     caretRange.current.setStart(container, start);
     caretRange.current.setEnd(container, end);
     caretRange.current.deleteContents();
   }
-  
+
+  const resetStates = () => {
+    command.current = "";
+    caretRange.current = null;
+    setKeywords("");
+    setFormat(null);
+  }
+
   const inputText = (ev) => {
     const userInput = getTextType(ev.nativeEvent.data);
 

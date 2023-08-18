@@ -10,6 +10,8 @@ const usePopoverPosition = (editorEl, { x, y }) => {
       popoverRef.current.style.top = `${top}px`;
       if (editorEl.offsetWidth - left > popoverRef.current.offsetWidth) {
         popoverRef.current.style.left = `${left}px`;
+      } else {
+        popoverRef.current.style.left = `${editorEl.offsetWidth - popoverRef.current.offsetWidth}px`;
       }
     };
 

@@ -8,7 +8,7 @@ const PopoverList = ({ items, selectedItemIndex, onItemClick }) => {
 
   return (
     <div className="bg-gray-50 dark:bg-[#303031]">
-      <div className="py-1 px-2 text-sm text-[#deddda]">
+      <div className="py-1 px-2 text-sm text-slate-500 dark:text-[#deddda]">
         <span>Basic blocks</span>
       </div>
       <ul ref={listRef} className="flex flex-col focus-within:outline-none focus-within:border-none">

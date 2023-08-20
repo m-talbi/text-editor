@@ -31,7 +31,6 @@ function App() {
       <Container>
         <Toolbar
           username="L Doe"
-          userIcon={<img height={35} width={35} src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png' />}
           readTime={3}
           viewCount={123}
         />

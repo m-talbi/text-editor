@@ -73,20 +73,10 @@ const Popover = ({ keywords, editorEl, onClose, onEscapePress, onFormatSelect, s
   return (
     <div
       ref={popoverRef}
-      className="absolute w-[20rem] h-[26rem] border border-gray-200 rounded-md shadow-md bg-white">
-      <div className="h-1/4 p-3">
-        <div className="text-base mb-2">
-          <span className="font-bold text-lg">Add blocks</span>
-          <p className="text-gray-400">Keep typing to filter, or escape to exit.</p>
-        </div>
-        <div className="text-base ">
-          <span className="text-gray-600">Filtering Keywords&nbsp;</span>
-          <span className="bg-sky-700 text-white px-[0.3rem] py-1 rounded-[4px]">{keywords.length}</span>
-        </div>
-      </div>
+      className="absolute overflow-x-hidden overflow-y-auto w-[270px] h-[350px] border border-gray-200 dark:border-none rounded-sm shadow-md bg-gray-50 dark:bg-[#1A1C26]">
       <PopoverList
         items={sortedFormats}
-        selectedIndex={selectedIndex}
+        selectedItemIndex={selectedIndex}
         onItemClick={onItemSelect}
       />
     </div>

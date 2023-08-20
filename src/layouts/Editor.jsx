@@ -81,13 +81,13 @@ const Editor = ({ title, onTitleUpdate }) => {
     <div className='flex flex-col mt-6'>
       <div>
         <input
-          className='w-full text-slate-700 text-4xl font-bold focus-within:outline-none'
+          className='w-full text-slate-700 text-4xl font-bold focus-within:outline-none bg-gray-50 dark:bg-[#15171F] dark:text-[#deddda] placeholder:text-slate400 placeholder:dark:text-slate-600'
           placeholder='Write your title here...' 
           onChange={onTitleUpdate}
           value={title}
         />
       </div>
-      <Seperator vertical={false} className="bg-slate-200 my-4" />
+      <Seperator vertical={false} className="bg-slate-200 dark:bg-slate-400 my-4" />
       <div className='relative'>
         <ContentEditable
           ref={contentEditableRef}

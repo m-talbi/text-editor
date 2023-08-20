@@ -7,11 +7,11 @@ const PopoverList = ({ items, selectedItemIndex, onItemClick }) => {
   const listRef = useScrollIntoItem(selectedItemIndex, items);
 
   return (
-    <div ref={listRef} className="bg-gray-50 dark:bg-[#303031]">
+    <div className="bg-gray-50 dark:bg-[#303031]">
       <div className="py-1 px-2 text-sm text-[#deddda]">
         <span>Basic blocks</span>
       </div>
-      <ul className="flex flex-col focus-within:outline-none focus-within:border-none">
+      <ul ref={listRef} className="flex flex-col focus-within:outline-none focus-within:border-none">
         {
           items.map((item, index) => (
             <li

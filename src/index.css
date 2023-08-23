@@ -24,3 +24,7 @@ div[contenteditable=true] {
   font-family: 'Source Sans 3', sans-serif;
   font-size: 18px;
 }
+
+.popover-visible {
+  display: block;
+}

@@ -25,22 +25,20 @@ class CaretUtils {
     return { node: null, selection: null, range: null };
   }
 
-  static getCaretRect(node: HTMLElement): { x: number; y: number } {
-    const isSupported = typeof window.getSelection !== "undefined";
+  static getCaretRect(): { x: number; y: number } {
+    const selection = window.getSelection() as Selection;
+    const currentRange = selection.getRangeAt(0);
 
-    if (isSupported) {
-      const currentRange = this.getRange();
-      const selection = window.getSelection() as Selection;
-
-      if (selection.rangeCount !== 0 && currentRange) {
-        const range = selection.getRangeAt(0);
-        const temp = document.createTextNode("\0");
-        range.insertNode(temp);
-        const { x, y } = range.getBoundingClientRect();
-        temp.parentNode?.removeChild(temp);
-        this.restoreCaretPosition(node, currentRange);
-        return { x, y };
-      }
+    if (selection.rangeCount !== 0 && currentRange) {
+      const range = selection.getRangeAt(0);
+      const temp = document.createTextNode("\0");
+      range.insertNode(temp);
+      const { x, y } = range.getBoundingClientRect();
+      temp.parentNode?.removeChild(temp);
+      currentRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(currentRange);
+      return { x, y };
     }
 
     return { x: 0, y: 0 };

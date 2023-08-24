@@ -2,7 +2,7 @@ import { twMerge } from "tailwind-merge"
 import { forwardRef } from "react";
 
 /* eslint-disable react/prop-types */
-const ContentEditable = forwardRef(({ onInput, placeholder, className }, ref) => {
+const ContentEditable = forwardRef(({ onKeypress, placeholder, className }, ref) => {
 
   return (
     <>
@@ -12,7 +12,7 @@ const ContentEditable = forwardRef(({ onInput, placeholder, className }, ref) =>
         className={twMerge('w-full text-slate-700 dark:text-[#deddda] text-base font-normal focus-within:outline-none whitespace-pre-wrap break-words before:text-slate-400 before:cursor-text empty:before:content-[attr(data-placeholder)]', className)}
         contentEditable
         suppressContentEditableWarning
-        onKeyDown={(e) => onInput(e)}
+        onKeyDown={onKeypress}
       >
         <br/>
       </div>

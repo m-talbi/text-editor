@@ -36,20 +36,22 @@ class MyEditor {
   }
 
   public onKeypress(ev: React.KeyboardEvent<HTMLDivElement>): EditorState {
-    const { input, type } = InputUtils.queryInputType(ev);
+    const { type } = InputUtils.queryInputType(ev.key);
 
-    if (this.isCommandActiveAndPopoverClosed(type))
+    if (this.isCommandAndPopoverClosed(type))
       this.openPopover();
-    else if (this.isCommandActiveAndKeyIsArrow(input))
+    else if (this.isPopoverOpenAndKeyIsArrow(ev.key))
       this.handlePopoverNavigation(ev);
-    else if (this.isCommandActiveAndKeyIsEnter(input))
+    else if (this.isPopoverOpenAndKeyIsEnter(ev.key))
       this.popover.onItemSelect(ev, this.handleItemSelect.bind(this));
-    else if (this.isCommandActiveAndKeyIsEscape(input))
+    else if (this.isPopoverOpenAndKeyIsEscape(ev.key))
       this.closePopover();
     else if (this.isCommandActive())
-      this.updateCommand(input);
-    else if (input === "Enter")
-      this.editor.breakLineAtCaret(ev);
+      this.updateCommand(ev.key);
+    else if (this.isEnterKey(ev.key))
+      this.editor.breakLine(ev);
+    else
+      this.editor.resetOnEmptyContent(ev);
 
     return {
       command: this.command,
@@ -61,22 +63,19 @@ class MyEditor {
   private updateCommand(input: string): void {
     if (input === "Backspace") {
       this.command = this.command.slice(0, this.command.length - 1);
-      if (this.command.length === 0) {
+      if (!this.command) {
         this.closePopover();
         return;
       }
-    }
-    else if (input.length > 1)
-      return;
-    else
-      this.command = this.command + input;
+    } else if (input.length !== 1) return;
 
+    this.command = this.command + input;
     this.selectedItemIndex = this.popover.filterFormats(this.command.slice(1));
   }
 
   private handleItemSelect(format: Format): void {
     this.editor.deleteCommand(this.currentRange, this.command);
-    this.editor.addElementAtCaret(format);
+    this.editor.AddNode(format);
     this.closePopover();
   }
 
@@ -103,15 +102,15 @@ class MyEditor {
     this.selectedItemIndex = 1;
   }
 
-  private isCommandActiveAndKeyIsEnter(key: string | null): boolean {
+  private isPopoverOpenAndKeyIsEnter(key: string | null): boolean {
     return this.isCommandActive() && key === "Enter";
   }
 
-  private isCommandActiveAndKeyIsArrow(key: string | null): boolean {
+  private isPopoverOpenAndKeyIsArrow(key: string | null): boolean {
     return this.isCommandActive() && (key === "ArrowUp" || key === "ArrowDown");
   }
 
-  private isCommandActiveAndPopoverClosed(type: string): boolean {
+  private isCommandAndPopoverClosed(type: string): boolean {
     return type === "command" && this.isPopoverOpened === false;
   }
 
@@ -119,8 +118,12 @@ class MyEditor {
     return this.command !== "";
   }
 
-  private isCommandActiveAndKeyIsEscape(key: string | null): boolean {
+  private isPopoverOpenAndKeyIsEscape(key: string | null): boolean {
     return this.isCommandActive() && key === "Escape";
+  }
+
+  private isEnterKey(key: string): boolean {
+    return key === "Enter";
   }
 }
 

@@ -11,12 +11,10 @@ const Editor = ({ title, onTitleUpdate }) => {
   const editor = useRef(null);
   const popoverRef = useRef(null);
   const contentEditableRef = useRef(null);
-
   const onKeypress = (e) => {
     if (!editor.current) return;
 
     const { isPopoverOpened, command, selectedItemIndex } = editor.current.onKeypress(e);
-    console.log(isPopoverOpened);
     if (isPopoverOpened) setSearchKeyword(command.slice(1));
     setSelectedItemIndex(selectedItemIndex);
   }
@@ -36,10 +34,10 @@ const Editor = ({ title, onTitleUpdate }) => {
         />
       </div>
       <Seperator vertical={false} className="bg-slate-200 dark:bg-slate-400 my-4" />
-      <div className='relative'>
+      <div className=''>
         <ContentEditable
           ref={contentEditableRef}
-          onInput={onKeypress}
+          onKeypress={onKeypress}
           placeholder='Type / for blocks, or @ to link docs or people'
         />
         <Popover

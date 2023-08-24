@@ -6,16 +6,16 @@ type InputType = {
 }
 
 class InputUtils {
-  static queryInputType(ev: React.KeyboardEvent): InputType {
-    switch (ev.key) {
+  static queryInputType(key: string): InputType {
+    switch (key) {
       default:
-        return { type: "text", input: ev.key }
+        return { type: "text", input: key }
       case "/":
-        return { type: "command", input: ev.key }
+        return { type: "command", input: key }
       case "@":
-        return { type: "link", input: ev.key }
+        return { type: "link", input: key }
       case "#":
-        return { type: "heading", input: ev.key }
+        return { type: "heading", input: key }
     }
   }
 

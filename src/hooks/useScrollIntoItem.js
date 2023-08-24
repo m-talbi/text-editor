@@ -5,10 +5,12 @@ export const useScrollIntoItem = (selectedItemIndex) => {
 
   useEffect(() => {
     if (listRef.current) {
-      const items = listRef.current.querySelectorAll("[data-id]");
-      items.item(selectedItemIndex - 1).scrollIntoView({
+      const item = listRef.current.querySelector(`[data-id="${selectedItemIndex}"]`);
+      if (!item) return;
+
+      item.scrollIntoView({
         behavior: "smooth",
-        block: "nearest",
+        block: "center",
       })
     }
   }, [selectedItemIndex]);

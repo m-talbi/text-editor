@@ -1,12 +1,10 @@
 /* eslint-disable react/prop-types */
-import { Pencil } from "lucide-react"
 import { forwardRef } from "react";
 import { formatsWithTitles } from "../editor/features";
 import { twMerge } from "tailwind-merge";
 import { useScrollIntoItem } from "../hooks/useScrollIntoItem";
 
 const Popover = forwardRef(({ searchKeyword, selectedItemIndex }, ref) => {
-  let index = 1;
   const listRef = useScrollIntoItem(selectedItemIndex);
 
   return (
@@ -31,10 +29,10 @@ const Popover = forwardRef(({ searchKeyword, selectedItemIndex }, ref) => {
                   .map((item) => (
                 <li
                   key={`format-${item.format}`}
-                  className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 hover:dark:bg-[#EA861A] cursor-pointer", `${selectedItemIndex === index && "bg-gray-200 dark:bg-[#EA861A]"}`)}
-                  data-id={index++}
+                  className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 hover:dark:bg-[#EA861A] cursor-pointer", `${selectedItemIndex === item.id && "bg-gray-200 dark:bg-[#EA861A]"}`)}
+                  data-id={item.id}
                 >
-                  <Pencil color="#000000" />
+                  <span className="icon" dangerouslySetInnerHTML={{ __html: item.icon }} />
                   <div>
                     <p className="text-gray-700 dark:text-[#deddda] font-bold">
                       {item.format}

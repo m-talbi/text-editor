@@ -24,3 +24,11 @@ div[contenteditable=true] {
   font-family: 'Source Sans 3', sans-serif;
   font-size: 18px;
 }
+
+.popover-visible {
+  display: block;
+}
+
+.icon > svg {
+  @apply text-slate-800 dark:text-slate-300;
+}

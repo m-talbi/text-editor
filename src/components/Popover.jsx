@@ -1,86 +1,56 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
-import { useKeyPress } from '../hooks/useKeypress';
-import { restoreCaretPosition, getCaretRect, clearSelection, saveCaretPosition } from '../utils/getCaretRect';
-import { sortByMatchedCharacters } from "../utils/utils";
-import PopoverList from "./PopoverList";
-import usePopoverPosition from "../hooks/usePopoverPosition";
-import formats from '../constants/formats';
+import { forwardRef } from "react";
+import { formatsWithTitles } from "../editor/features";
+import { twMerge } from "tailwind-merge";
+import { useScrollIntoItem } from "../hooks/useScrollIntoItem";
 
-const Popover = ({ keywords, editorEl, onClose, onEscapePress, onFormatSelect, savedSelection }) => {
-  const [isFormatSelected, setIsFormatSelected] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [sortedFormats] = useState(sortByMatchedCharacters(keywords, formats));
-
-  let { x, y } = getCaretRect(editorEl);
-  const popoverRef = usePopoverPosition(editorEl, {x, y});
-
-  useKeyPress((ev) => {
-    if (document.activeElement.nodeName !== "BODY" && document.activeElement !== editorEl) {
-      onClose();
-      return;
-    }
-
-    const key = ev.key;
-    const isCaretVisible = !savedSelection.current;
-
-    if (key === "Enter") {
-      ev.preventDefault();
-      setIsFormatSelected(true);
-    } else if (key === "ArrowUp") {
-      ev.preventDefault();
-      selectPreviousItem();
-    } else if (key === "ArrowDown") {
-      ev.preventDefault();
-      selectNextItem();
-    } else if (key === "Escape") {
-      restoreCaret();
-      onEscapePress();
-    } else if (!isCaretVisible) restoreCaret();
-  });
-
-  useEffect(() => {
-    if (isFormatSelected) {
-      onItemSelect(selectedIndex);
-    }
-  }, [isFormatSelected]);
-
-  const hideCaret = () => {
-    savedSelection.current = saveCaretPosition();
-    editorEl.blur();
-    clearSelection();
-  }
-
-  const restoreCaret = () => {
-    restoreCaretPosition(editorEl, savedSelection.current);
-    savedSelection.current = null;
-  }
-
-  const selectPreviousItem = () => {
-    setSelectedIndex((prev) => Math.max(prev - 1, 0));
-  };
-
-  const selectNextItem = () => {
-    setSelectedIndex((prev) => Math.min(prev + 1, sortedFormats.length - 1));
-  };
-
-  const onItemSelect = (index) => {
-    hideCaret();
-    onFormatSelect(sortedFormats[index]);
-    onClose();
-  };
+const Popover = forwardRef(({ searchKeyword, selectedItemIndex }, ref) => {
+  const listRef = useScrollIntoItem(selectedItemIndex);
 
   return (
     <div
-      ref={popoverRef}
-      className="absolute overflow-x-hidden overflow-y-auto w-[270px] h-[350px] border border-gray-200 dark:border-none rounded-sm shadow-md bg-gray-50 dark:bg-[#1A1C26]">
-      <PopoverList
-        items={sortedFormats}
-        selectedItemIndex={selectedIndex}
-        onItemClick={onItemSelect}
-      />
+      ref={ref}
+      className="hidden absolute overflow-x-hidden overflow-y-auto w-[270px] h-[350px] border border-gray-200 dark:border-none rounded-sm shadow-md bg-gray-50 dark:bg-[#1A1C26]"
+    >
+      <div ref={listRef} className="bg-gray-50 dark:bg-[#303031]">
+        {formatsWithTitles.map((format) => (
+          <div key={format.name}>
+            <div
+              key={`format-${format.name}`}
+              className="py-1 px-2 text-sm text-slate-500 dark:text-[#deddda]"
+            >
+              <span>{format.name}</span>
+            </div>
+            <ul className="flex flex-col focus-within:outline-none focus-within:border-none">
+              {
+                format
+                  .formats
+                  .filter((item) => item.format.toLowerCase().includes(searchKeyword.toLowerCase()))
+                  .map((item) => (
+                <li
+                  key={`format-${item.format}`}
+                  className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 hover:dark:bg-[#EA861A] cursor-pointer", `${selectedItemIndex === item.id && "bg-gray-200 dark:bg-[#EA861A]"}`)}
+                  data-id={item.id}
+                >
+                  <span className="icon" dangerouslySetInnerHTML={{ __html: item.icon }} />
+                  <div>
+                    <p className="text-gray-700 dark:text-[#deddda] font-bold">
+                      {item.format}
+                    </p>
+                    <p className="text-gray-400 dark:text-gray-100 text-xs">
+                      Shortcut: type {item.shortcut}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   )
-}
+});
+
+Popover.displayName = 'Popover';
 
 export default Popover

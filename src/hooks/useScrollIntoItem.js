@@ -1,13 +1,16 @@
 import { useEffect, useRef } from "react";
 
-export const useScrollIntoItem = (selectedItemIndex, items) => {
+export const useScrollIntoItem = (selectedItemIndex) => {
   const listRef = useRef(null);
 
   useEffect(() => {
-    if (listRef.current && selectedItemIndex < items.length) {
-      listRef.current.children[selectedItemIndex].scrollIntoView({
+    if (listRef.current) {
+      const item = listRef.current.querySelector(`[data-id="${selectedItemIndex}"]`);
+      if (!item) return;
+
+      item.scrollIntoView({
         behavior: "smooth",
-        block: "nearest",
+        block: "center",
       })
     }
   }, [selectedItemIndex]);

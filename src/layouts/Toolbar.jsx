@@ -1,4 +1,4 @@
-import Seperator from "../components/Seperator"
+import Separator from "../components/Separator"
 import { Clock, ArrowDownLeft, CheckCircle, Cloud, GripVertical } from 'lucide-react'
 
 /* eslint-disable react/prop-types */
@@ -9,12 +9,12 @@ const Toolbar = ({ username, readTime, viewCount }) => {
         <div className="bg-[#EA861A] rounded-[4px] px-[0.35rem] flex items-center justify-center">
           <span className="text-gray-800 text-lg font-bold p-[0.15rem] h-fit">{username[0].toUpperCase()}</span>
         </div>
-        <Seperator className={"h-4 bg-slate-400"} vertical={true} />
+        <Separator className={"h-4 bg-slate-400"} vertical={true} />
         <div className="inline-flex items-center gap-2 text-slate-400">
           <Clock size={20} />
           <span>{readTime}min</span>
         </div>
-        <Seperator className={"h-4 bg-slate-400"} vertical={true} />
+        <Separator className={"h-4 bg-slate-400"} vertical={true} />
         <div className="text-slate-400 flex items-center">
           <ArrowDownLeft size={20} />
           <span>{viewCount}</span>

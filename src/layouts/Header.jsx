@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { ChevronsRight, Unlock, ChevronDown } from 'lucide-react'
 import BreadCrumb from '../components/BreadCrumb'
-import Seperator from '../components/Seperator'
+import Separator from '../components/Separator'
 
 const Header = ({ breadCrumbs }) => {
   return (
@@ -30,7 +30,7 @@ const Header = ({ breadCrumbs }) => {
           <Unlock size={18} />
           <span className='ml-1'>Editing</span>
         </div>
-        <Seperator className={"h-5"} vertical={true} />
+        <Separator className={"h-5"} vertical={true} />
         <div className='text-blue-600 dark:text-[#EA861A] font-semibold inline-flex items-center'>
           <span>Publish Space</span>
           <ChevronDown className='pt-1' size={22} />

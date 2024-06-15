@@ -3,7 +3,7 @@ import { Pencil } from "lucide-react"
 import { twMerge } from "tailwind-merge";
 import { useScrollIntoItem } from "../hooks/useScrollIntoItem";
 
-const PopoverList = ({ items, selectedItemIndex, onItemClick }) => {
+const MenuList = ({ items, selectedItemIndex, onItemClick }) => {
   const listRef = useScrollIntoItem(selectedItemIndex, items);
 
   return (
@@ -32,4 +32,4 @@ const PopoverList = ({ items, selectedItemIndex, onItemClick }) => {
   )
 };
 
-export default PopoverList;
+export default MenuList;

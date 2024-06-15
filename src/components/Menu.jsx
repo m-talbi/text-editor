@@ -1,11 +1,14 @@
 /* eslint-disable react/prop-types */
-import { forwardRef } from "react";
+import { forwardRef, useContext } from "react";
 import { formatsWithTitles } from "../editor/features";
 import { twMerge } from "tailwind-merge";
 import { useScrollIntoItem } from "../hooks/useScrollIntoItem";
+import { EditorStateContext } from "../contexts/EditorStateContext";
 
-const Popover = forwardRef(({ searchKeyword, selectedItemIndex }, ref) => {
-  const listRef = useScrollIntoItem(selectedItemIndex);
+const Menu = forwardRef((_, ref) => {
+  const { state } = useContext(EditorStateContext);
+  const { command, itemId, itemIndex } = state;
+  const listRef = useScrollIntoItem(itemIndex);
 
   return (
     <div
@@ -25,11 +28,11 @@ const Popover = forwardRef(({ searchKeyword, selectedItemIndex }, ref) => {
               {
                 format
                   .formats
-                  .filter((item) => item.format.toLowerCase().includes(searchKeyword.toLowerCase()))
+                  .filter((item) => item.format.toLowerCase().includes(command.slice(1)))
                   .map((item) => (
                 <li
                   key={`format-${item.format}`}
-                  className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 hover:dark:bg-[#EA861A] cursor-pointer", `${selectedItemIndex === item.id && "bg-gray-200 dark:bg-[#EA861A]"}`)}
+                  className={twMerge("flex items-center justify-start gap-6 py-2 px-5 duration-150 ease-in hover:bg-gray-200 hover:dark:bg-[#EA861A] cursor-pointer", `${itemId === item.id && "bg-gray-200 dark:bg-[#EA861A]"}`)}
                   data-id={item.id}
                 >
                   <span className="icon" dangerouslySetInnerHTML={{ __html: item.icon }} />
@@ -51,6 +54,6 @@ const Popover = forwardRef(({ searchKeyword, selectedItemIndex }, ref) => {
   )
 });
 
-Popover.displayName = 'Popover';
+Menu.displayName = 'Menu';
 
-export default Popover
+export default Menu

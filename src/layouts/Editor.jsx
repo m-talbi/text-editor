@@ -1,53 +1,40 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useRef, useState } from 'react';
-import ContentEditable from '../components/ContentEditable';
-import Popover from '../components/Popover';
-import Seperator from '../components/Seperator';
-import MyEditor from '../editor/main'
+import { useContext, useEffect, useRef } from "react";
+import Editable from "../components/Editable";
+import Menu from "../components/Menu";
+import Separator from "../components/Separator";
+import { EditorContextR } from "../contexts/EditorContext";
 
 const Editor = ({ title, onTitleUpdate }) => {
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [selectedItemIndex, setSelectedItemIndex] = useState(1);
-  const editor = useRef(null);
-  const popoverRef = useRef(null);
-  const contentEditableRef = useRef(null);
-  const onKeypress = (e) => {
-    if (!editor.current) return;
-
-    const { isPopoverOpened, command, selectedItemIndex } = editor.current.onKeypress(e);
-    if (isPopoverOpened) setSearchKeyword(command.slice(1));
-    setSelectedItemIndex(selectedItemIndex);
-  }
+  const { setComps } = useContext(EditorContextR);
+  const menuRef = useRef(null);
+  const editableRef = useRef(null);
 
   useEffect(() => {
-    editor.current = new MyEditor(contentEditableRef, popoverRef);
-  }, [])
+    setComps(() => ({ editable: editableRef.current, menu: menuRef.current }));
+  }, [setComps]);
 
   return (
-    <div className='flex flex-col mt-6'>
+    <div className="flex flex-col mt-6 h-[1000px]">
       <div>
         <input
-          className='w-full text-slate-700 text-4xl font-bold focus-within:outline-none bg-gray-50 dark:bg-[#15171F] dark:text-[#deddda] placeholder:text-slate400 placeholder:dark:text-slate-600'
-          placeholder='Write your title here...'
+          className="w-full text-slate-700 text-4xl font-bold focus-within:outline-none bg-gray-50 dark:bg-[#15171F] dark:text-[#deddda] placeholder:text-slate400 placeholder:dark:text-slate-600"
+          placeholder="Write your title here..."
           onChange={onTitleUpdate}
           value={title}
         />
       </div>
-      <Seperator vertical={false} className="bg-slate-200 dark:bg-slate-400 my-4" />
-      <div className=''>
-        <ContentEditable
-          ref={contentEditableRef}
-          onKeypress={onKeypress}
-          placeholder='Type / for blocks, or @ to link docs or people'
-        />
-        <Popover
-          ref={popoverRef}
-          searchKeyword={searchKeyword}
-          selectedItemIndex={selectedItemIndex}
-        />
-      </div>
+      <Separator
+        vertical={false}
+        className="bg-slate-200 dark:bg-slate-400 my-4"
+      />
+      <Editable
+        ref={editableRef}
+        placeholder="Type / for blocks, or @ to link docs or people"
+      />
+      <Menu ref={menuRef} />
     </div>
-  )
-}
+  );
+};
 
 export default Editor;

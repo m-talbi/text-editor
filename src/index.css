@@ -32,3 +32,24 @@ div[contenteditable=true] {
 .icon > svg {
   @apply text-slate-800 dark:text-slate-300;
 }
+
+.block {
+  @apply w-full h-6;
+}
+
+.inner-block-container {
+  @apply relative w-full min-h-[24px] text-[#deddda] text-base font-normal relative focus-within:outline-none whitespace-pre-wrap break-words;
+}
+/* empty:before:content-[attr(data-placeholder)] */
+
+.block-element {
+  @apply w-[100%] focus-within:outline-none
+}
+
+.image-container {
+  @apply absolute left-[-25px];
+}
+
+.image-container > svg {
+  @apply text-white;
+}

@@ -1,30 +1,15 @@
+import { EditorState } from "../types";
 import CaretUtils from "../utils/caret/caretUtils";
 
-interface EditorState {
-  command: string;
-  isMenuOpen: boolean;
-  itemIndex: number;
-  itemId: number;
-  formats: Format[];
-}
-
-interface Format {
-  format: string;
-  tag: string;
-  shortcut: string;
-  classes: string[];
-  id: number;
-}
-
-class Popover {
-  private popover: HTMLDivElement;
+class MenuContext {
+  private menuEl: HTMLDivElement;
   private keyActionMap: Map<string, (state: EditorState) => void> = new Map([
     ["ArrowUp", (state) => this.selectPreviousItem(state)],
     ["ArrowDown", (state) => this.selectNextItem(state)],
   ]);
 
-  constructor(popover: HTMLDivElement) {
-    this.popover = popover;
+  constructor(menuEl: HTMLDivElement) {
+    this.menuEl = menuEl;
   }
 
   public handleInput(state: EditorState) {
@@ -47,8 +32,9 @@ class Popover {
         state.itemId = this.handleNavigation(ev, state);
         break;
       case "Enter":
-        this.hide(state);
-        break;
+        if (state.isMenuOpen) {
+          this.hide(state);
+        }
     }
   }
 
@@ -65,13 +51,14 @@ class Popover {
   }
 
   public show(state: EditorState): void {
-    this.popover.classList.add("popover-visible");
+    this.menuEl.classList.add("popover-visible");
     this.updatePopoverPosition();
     state.isMenuOpen = true;
   }
 
   public hide(state: EditorState): void {
-    this.popover.classList.remove("popover-visible");
+    this.menuEl.classList.remove("popover-visible");
+    state.shouldMenuClose = true;
     state.isMenuOpen = false;
     state.itemIndex = 1;
   }
@@ -79,10 +66,10 @@ class Popover {
   public updatePopoverPosition(): void {
     const { x, y } = CaretUtils.getCaretRect();
     const screenWidth = window.innerWidth;
-    const popoverWidth = this.popover.offsetWidth;
+    const popoverWidth = this.menuEl.offsetWidth;
 
-    this.popover.style.left = `${Math.min(x, screenWidth - (popoverWidth - 50))}px`;
-    this.popover.style.top = `${y + 30}px`;
+    this.menuEl.style.left = `${Math.min(x, screenWidth - (popoverWidth - 50))}px`;
+    this.menuEl.style.top = `${y + 30}px`;
   }
 
   private selectPreviousItem(state: EditorState): void {
@@ -94,4 +81,4 @@ class Popover {
   }
 }
 
-export default Popover;
+export default MenuContext;

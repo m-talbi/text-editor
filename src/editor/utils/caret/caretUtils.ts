@@ -44,16 +44,52 @@ class CaretUtils {
     return { x: 0, y: 0 };
   }
 
-  public static getRange(): Range | undefined {
+  public static getRange(): { selection: Selection | undefined, range: Range | undefined } {
     const selection = window.getSelection() as Selection;
     if (selection.rangeCount > 0) {
-      return selection.getRangeAt(0).cloneRange();
+      return { selection, range: selection.getRangeAt(0).cloneRange()};
     }
+    return { selection: undefined, range: undefined };
   }
 
   public static deleteText(startOffset: number, endOffset: number): void {
     const selection = window.getSelection() as Selection;
     const range = selection.getRangeAt(0);
+    range.setStart(range.commonAncestorContainer, startOffset);
+    range.setEnd(range.commonAncestorContainer, endOffset);
+    range.deleteContents();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+
+  public static copyText(startOffset: number): string {
+    const selection = window.getSelection() as Selection;
+    const text: Array<string> = [];
+    let endOffset = startOffset;
+    if (selection.focusNode?.textContent) {
+      for (; selection.focusNode.textContent[endOffset]; endOffset++) {
+        text.push(selection.focusNode.textContent[endOffset]);
+      };
+    }
+    return text.join("");
+  }
+
+  public static getCommandEndOffset(startOffset: number, range: Range | undefined) {
+    let endOffset = startOffset;
+    if (range?.startContainer?.textContent) {
+      for (; range.startContainer.textContent[endOffset] &&
+            range.startContainer.textContent[endOffset] !== " "; endOffset++) {};
+    }
+    return endOffset;
+  }
+
+  public static deleteCommand(startOffset: number): void {
+    const selection = window.getSelection() as Selection;
+    const range = selection.getRangeAt(0);
+    let endOffset = startOffset;
+    if (selection.focusNode?.textContent) {
+      for (; selection.focusNode.textContent[endOffset]; endOffset++) {};
+    }
     range.setStart(range.commonAncestorContainer, startOffset);
     range.setEnd(range.commonAncestorContainer, endOffset);
     range.deleteContents();

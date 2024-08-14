@@ -1,130 +1,71 @@
-import React from "react";
-import Editor from "./editor";
-import Popover from "./popover";
-import InputUtils from "./utils/input/inputUtils";
-import CaretUtils from "./utils/caret/caretUtils";
+import MenuContext from "./menu/popover";
+import { formats } from "./features";
+import ElementInjector from "./injector/ElementInjector";
+import CommandContext from "./editable/editor";
+import { EditorState } from "./types";
 
-interface Format {
-  format: string;
-  tag: string;
-  shortcut: string;
-  classes: string[];
-}
+class EditorContext {
+  private commandCtx: CommandContext;
+  private menuCtx: MenuContext;
+  private injector: ElementInjector;
 
-interface EditorState {
-  command: string;
-  isPopoverOpened: boolean;
-  selectedItemIndex: number;
-}
-
-class MyEditor {
-  private editor: Editor;
-  private popover: Popover;
-  private currentRange: Range | undefined;
-
-  private selectedItemIndex: number = 1;
-  private isPopoverOpened: boolean = false;
-  private command: string = "";
-
-  constructor(
-      contentEditableRef: React.RefObject<HTMLDivElement>,
-      popoverRef: React.RefObject<HTMLDivElement>
-    ) {
-      if (!contentEditableRef.current || !popoverRef.current) return;
-      this.editor = new Editor(contentEditableRef.current as HTMLDivElement);
-      this.popover = new Popover(popoverRef.current as HTMLDivElement);
+  private state: EditorState = {
+    itemIndex: 1,
+    itemId: 1,
+    isMenuOpen: false,
+    shouldMenuClose: false,
+    command: "",
+    formats: formats
   }
 
-  public onKeypress(ev: React.KeyboardEvent<HTMLDivElement>): EditorState {
-    const { type } = InputUtils.queryInputType(ev.key);
+  constructor(
+      editable: HTMLDivElement,
+      menu: HTMLDivElement
+    ) {
+      this.commandCtx = new CommandContext(editable, this.state);
+      this.menuCtx = new MenuContext(menu);
+      this.injector = new ElementInjector(editable);
+  }
 
-    if (this.isCommandAndPopoverClosed(type))
-      this.openPopover();
-    else if (this.isPopoverOpenAndKeyIsArrow(ev.key))
-      this.handlePopoverNavigation(ev);
-    else if (this.isPopoverOpenAndKeyIsEnter(ev.key))
-      this.popover.onItemSelect(ev, this.handleItemSelect.bind(this));
-    else if (this.isPopoverOpenAndKeyIsEscape(ev.key))
-      this.closePopover();
-    else if (this.isCommandActive())
-      this.updateCommand(ev.key);
-    else if (this.isEnterKey(ev.key))
-      this.editor.breakLine(ev);
-    else
-      this.editor.resetOnEmptyContent(ev);
+  public onInput(ev: any): EditorState {
+    this.commandCtx.handleInput(this.state);
+    this.menuCtx.handleInput(this.state);
+    this.injector.handleInput(ev, this.state);
+
+    if (this.state.shouldMenuClose) {
+      this.state.shouldMenuClose = false;
+    }
 
     return {
-      command: this.command,
-      isPopoverOpened: this.isPopoverOpened,
-      selectedItemIndex: this.selectedItemIndex,
+      command: this.state.command,
+      isMenuOpen: this.state.isMenuOpen,
+      shouldMenuClose: this.state.shouldMenuClose,
+      itemIndex: this.state.itemIndex,
+      itemId: this.state.itemId,
+      formats: this.state.formats
     }
   }
 
-  private updateCommand(input: string): void {
-    if (input === "Backspace") {
-      this.command = this.command.slice(0, this.command.length - 1);
-      if (!this.command) {
-        this.closePopover();
-        return;
-      }
-    } else if (input.length !== 1) return;
+  public onKeypress(ev: any): EditorState {
+    this.commandCtx.handleKeypress(ev, this.state);
+    this.menuCtx.handleKeypress(ev, this.state);
+    this.injector.handleKeypress(ev, this.state);
 
-    this.command = this.command + input;
-    this.selectedItemIndex = this.popover.filterFormats(this.command.slice(1));
-  }
+    if (this.state.shouldMenuClose) {
+      this.state.shouldMenuClose = false;
+    }
 
-  private handleItemSelect(format: Format): void {
-    this.editor.deleteCommand(this.currentRange, this.command);
-    this.editor.AddNode(format);
-    this.closePopover();
-  }
+    //console.log(`command: ${this.state.command}\nisMenuOpen: ${this.state.isMenuOpen}\nitemIndex: ${this.state.itemIndex}\nformats: ${JSON.stringify(this.state.formats.map(item => ({ id: item.id, tag: item.tag, format: item.format })))}`);
 
-  private handlePopoverNavigation(ev: React.KeyboardEvent<HTMLDivElement>): void {
-    this.selectedItemIndex = this.popover.handleNavigation(ev);
-  }
-
-  private openPopover(): void {
-    this.isPopoverOpened = true;
-    this.command = "/";
-    this.popover.show();
-    this.currentRange = CaretUtils.getRange();
-  }
-
-  private closePopover(): void {
-    this.popover.hide();
-    this.resetStates();
-  }
-
-  private resetStates(): void {
-    this.isPopoverOpened = false;
-    this.command = "";
-    this.currentRange = undefined;
-    this.selectedItemIndex = 1;
-  }
-
-  private isPopoverOpenAndKeyIsEnter(key: string | null): boolean {
-    return this.isCommandActive() && key === "Enter";
-  }
-
-  private isPopoverOpenAndKeyIsArrow(key: string | null): boolean {
-    return this.isCommandActive() && (key === "ArrowUp" || key === "ArrowDown");
-  }
-
-  private isCommandAndPopoverClosed(type: string): boolean {
-    return type === "command" && this.isPopoverOpened === false;
-  }
-
-  private isCommandActive(): boolean {
-    return this.command !== "";
-  }
-
-  private isPopoverOpenAndKeyIsEscape(key: string | null): boolean {
-    return this.isCommandActive() && key === "Escape";
-  }
-
-  private isEnterKey(key: string): boolean {
-    return key === "Enter";
+    return {
+      command: this.state.command,
+      isMenuOpen: this.state.isMenuOpen,
+      shouldMenuClose: this.state.shouldMenuClose,
+      itemIndex: this.state.itemIndex,
+      itemId: this.state.itemId,
+      formats: this.state.formats
+    }
   }
 }
 
-export default MyEditor;
+export default EditorContext;
